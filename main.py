@@ -57,12 +57,5 @@ class Game:
     ...
 
 
-board = Board()
 if __name__ == "__main__":
-    # board.change_cell_state(7, 'x')
-    # board.change_cell_state(4, 'x')
-    # board.change_cell_state(1, 'o')
-    # board.change_cell_state(2, 'o')
-    board.change_cell_state(0, 'X')
-    print(board.check_win())
-    print(board)
+    ...
