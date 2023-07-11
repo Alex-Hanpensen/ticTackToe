@@ -5,7 +5,7 @@ from colorama import *
 init()
 
 
-@dataclass
+@dataclass(slots=True)
 class Cell:
     cell_id: int
     isbusy: bool = False
@@ -13,14 +13,14 @@ class Cell:
 
 
 class Board:
-    victories = [[0, 1, 2],
-                 [3, 4, 5],
-                 [6, 7, 8],
-                 [0, 3, 6],
-                 [1, 4, 7],
-                 [2, 5, 8],
-                 [0, 4, 8],
-                 [2, 4, 6]]
+    __VICTORIES = [(0, 1, 2),
+                   (3, 4, 5),
+                   (6, 7, 8),
+                   (0, 3, 6),
+                   (1, 4, 7),
+                   (2, 5, 8),
+                   (0, 4, 8),
+                   (2, 4, 6)]
 
     def __init__(self, fields: list[Cell, ...] = None):
         if fields is None:
@@ -37,7 +37,7 @@ class Board:
             return True
 
     def check_win(self) -> bool:
-        for i in self.victories:
+        for i in self.__VICTORIES:
             if self.fields[i[0]].value == self.fields[i[1]].value == self.fields[i[2]].value != '':
                 return True
 
@@ -57,6 +57,8 @@ class Board:
 
 
 class Player:
+    __slots__ = 'name', 'wins'
+
     def __init__(self, name: str, wins: int = 0):
         self.name = name
         self.wins = wins
@@ -71,56 +73,56 @@ class Game:
         self.board = board
         self.state = state
 
-    def is_valid_move(self, cell_id: str) -> bool:
+    def __is_valid_move(self, cell_id: str) -> bool:
         return cell_id.isdigit() and \
             int(cell_id) in range(len(self.board.fields)) and \
             not self.board.fields[int(cell_id)].isbusy
 
-    def start_move(self, player: Player) -> bool:
+    def __start_move(self, player: Player) -> bool:
         cell_id = player.move()
-        if self.is_valid_move(cell_id):
+        if self.__is_valid_move(cell_id):
             cell_id = int(cell_id)
             value = f'{Fore.BLUE}0{Fore.RESET}' if self.players.index(player) else f'{Fore.RED}X{Fore.RESET}'
         else:
             print(f'{Fore.RED}Клетка занята или не существует! Повторите попытку.{Fore.RESET}')
-            return self.start_move(player)
+            return self.__start_move(player)
 
         self.board.change_cell_state(cell_id, value)
         print(self.board)
         return self.board.check_win()
 
-    def add_win(self, player: Player):
+    def __add_win(self, player: Player):
         player.wins += 1
 
-    def start_game(self) -> bool | None:
+    def __start_game(self) -> bool | None:
         self.board = Board()
         print(f'{Fore.GREEN}Игра началась!{Fore.RESET}')
         print(self.board)
 
-        return self.game()
+        return self.__game()
 
-    def game(self) -> bool | None:
+    def __game(self) -> bool | None:
         while not self.board.check_win():
             for player in self.players:
-                if self.start_move(player):
-                    self.add_win(player)
+                if self.__start_move(player):
+                    self.__add_win(player)
                     return bool(self.players.index(player))
 
                 if self.board.check_draw():
                     return None
 
-    def get_score(self) -> str:
+    def __get_score(self) -> str:
         return f'{self.players[0].wins}:{self.players[1].wins}'
 
     def start_games(self):
         while self.state:
             print('_' * 30)
-            result = self.start_game()
+            result = self.__start_game()
             if result is None:
-                print(f'Ничья! Счёт {self.get_score()}')
+                print(f'Ничья! Счёт {self.__get_score()}')
             else:
                 print(f'Игра завершена! Победил игрок {self.players[result].name}')
-                print(f'Счёт {self.get_score()}')
+                print(f'Счёт {self.__get_score()}')
 
             self.state = True if input('Хотите сыграть ещё раз (Y/N) >>> ').upper() in ('Y', 'YES') else False
 
